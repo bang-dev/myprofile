@@ -6,6 +6,7 @@ import com.profile.api.io.ProfileResponse;
 import com.profile.api.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -17,6 +18,7 @@ import java.util.UUID;
 public class ProfileServiceImpl implements ProfileService {
 
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public ProfileResponse createProfile(ProfileRequest request) {
@@ -28,6 +30,13 @@ public class ProfileServiceImpl implements ProfileService {
             return convertToProfileResponse(newProfile);
         }
         throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already exists");
+    }
+
+    @Override
+    public ProfileResponse getProfile(String email) {
+        UserEntity existingUser = userRepository.findByEmail(email).orElseThrow(() ->
+                new ResponseStatusException(HttpStatus.NOT_FOUND, "User with email " + email + " not found"));
+        return convertToProfileResponse(existingUser);
     }
 
     private ProfileResponse convertToProfileResponse(UserEntity newProfile) {
@@ -44,7 +53,7 @@ public class ProfileServiceImpl implements ProfileService {
                 .name(request.getName())
                 .userId(UUID.randomUUID().toString())
                 .email(request.getEmail())
-                .password(request.getPassword())
+                .password(passwordEncoder.encode(request.getPassword()))
                 .isAccountVerified(false)
                 .resetOtpExpireAt(0L)
                 .verifyOtp(null)
@@ -53,4 +62,6 @@ public class ProfileServiceImpl implements ProfileService {
                 .build();
 
     }
+
+
 }
