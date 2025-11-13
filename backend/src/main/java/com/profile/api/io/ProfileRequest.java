@@ -17,7 +17,6 @@ public class ProfileRequest {
     @Email(message = "Email should be valid")
     @NotNull(message = "Email cannot be null")
     private String email;
-    @Min(value = 6, message = "Password must be at least 6 characters long")
-    @Max(value = 10,message = "Password must be at most 10 characters long")
+    @Size(min = 6, message = "Password must be at least 6 characters long")
     private String password;
 }
